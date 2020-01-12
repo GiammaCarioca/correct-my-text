@@ -27,18 +27,19 @@
 		}
 	}
 
-	function updateCount() {
-		const chars = text.value.length
-		const words = text.value.split(/\s+/).filter(word => word.length > 0).length
+	function isSingular(words) {
+		return words === 1 ? 'word' : 'words'
+	}
 
-		if (!words) return
+	function updateCount() {
+		const words = text.value.split(/\s+/).filter(word => word.length > 0).length
 
 		checkMaxWords(words)
 
 		if (text.classList.contains('exceeded')) {
 			count.textContent = `You have exceeded the maximum number of ${maxWords} words.`
 		} else {
-			count.textContent = `You've written ${words} words and ${chars} characters.`
+			count.textContent = `You've written ${words} ${isSingular(words)}.`
 		}
 	}
 
