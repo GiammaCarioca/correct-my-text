@@ -1,5 +1,5 @@
 ;(function() {
-	'use strict'
+	;('use strict')
 
 	/**
 	 * String.prototype.trim() polyfill
@@ -14,6 +14,7 @@
 	const text = document.querySelector('#text')
 	const count = document.querySelector('#count')
 	const deleteBtn = document.querySelector('#delete')
+	const storagePrefix = 'my-text_'
 	const maxWords = 5
 
 	function checkMaxWords(words) {
@@ -32,7 +33,13 @@
 		return words === 1 ? 'word' : 'words'
 	}
 
+	function autosaveDraft() {
+		localStorage.setItem(storagePrefix, text.value)
+	}
+
 	function updateCount() {
+		autosaveDraft()
+
 		const words = text.value.split(/\s+/).filter(word => word.length > 0).length
 
 		checkMaxWords(words)
@@ -52,8 +59,15 @@
 		updateCount()
 	}
 
-	// Keep character count on refresh
-	updateCount()
+	function loadData() {
+		text.value = localStorage.getItem(storagePrefix)
+
+		// Keep character count on refresh
+		updateCount()
+	}
+
+	// Load saved data from storage
+	loadData()
 
 	text.addEventListener('input', updateCount, false)
 	deleteBtn.addEventListener('click', deleteText, false)
