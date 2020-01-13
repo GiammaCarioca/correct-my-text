@@ -13,6 +13,7 @@
 
 	const text = document.querySelector('#text')
 	const count = document.querySelector('#count')
+	const deleteBtn = document.querySelector('#delete')
 	const maxWords = 5
 
 	function checkMaxWords(words) {
@@ -43,8 +44,17 @@
 		}
 	}
 
+	function deleteText() {
+		text.value = ''
+		text.classList.remove('exceeded')
+		count.classList.remove('exceeded')
+
+		updateCount()
+	}
+
 	// Keep character count on refresh
 	updateCount()
 
 	text.addEventListener('input', updateCount, false)
+	deleteBtn.addEventListener('click', deleteText, false)
 })()
