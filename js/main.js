@@ -1,6 +1,21 @@
 ;(function() {
 	;('use strict')
 
+	//
+	// Variables
+	//
+
+	const text = document.querySelector('#text')
+	const count = document.querySelector('#count')
+	const submit = document.querySelector('#submit')
+	const storagePrefix = 'my-text_'
+	const maxWords = 10
+	const minWords = 5
+
+	//
+	// Methods
+	//
+
 	/**
 	 * String.prototype.trim() polyfill
 	 * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/Trim#Polyfill
@@ -11,38 +26,43 @@
 		}
 	}
 
-	const text = document.querySelector('#text')
-	const count = document.querySelector('#count')
-	const deleteBtn = document.querySelector('#delete')
-	const storagePrefix = 'my-text_'
-	const maxWords = 5
+	const countWords = _ =>
+		text.value.split(/\s+/).filter(word => word.length > 0).length
 
-	function checkMaxWords(words) {
+	const checkMinWords = words => {
 		if (!words) return
 
-		if (words > maxWords) {
+		return words > minWords ? true : false
+	}
+
+	const checkMaxWords = words => {
+		if (!words) return
+
+		return words > maxWords ? true : false
+	}
+
+	const isSingular = words => (words === 1 ? 'word' : 'words')
+
+	const autosaveDraft = () => localStorage.setItem(storagePrefix, text.value)
+
+	const updateCount = () => {
+		autosaveDraft()
+
+		const words = countWords()
+
+		if (checkMinWords(words)) {
+			submit.classList.add('min')
+		} else {
+			submit.classList.remove('min')
+		}
+
+		if (checkMaxWords(words)) {
 			text.classList.add('exceeded')
 			count.classList.add('exceeded')
 		} else {
 			text.classList.remove('exceeded')
 			count.classList.remove('exceeded')
 		}
-	}
-
-	function isSingular(words) {
-		return words === 1 ? 'word' : 'words'
-	}
-
-	function autosaveDraft() {
-		localStorage.setItem(storagePrefix, text.value)
-	}
-
-	function updateCount() {
-		autosaveDraft()
-
-		const words = text.value.split(/\s+/).filter(word => word.length > 0).length
-
-		checkMaxWords(words)
 
 		if (text.classList.contains('exceeded')) {
 			count.textContent = `You have exceeded the maximum number of ${maxWords} words.`
@@ -51,24 +71,71 @@
 		}
 	}
 
-	function deleteText() {
+	const cleanInput = event => {
+		// Only run for the #delete button
+		if (event.target.id !== 'delete') return
+
+		// Confirm with the user before deleting
+		if (
+			!window.confirm(
+				'Are you sure you want to delete this draft? This cannot be undone.'
+			)
+		)
+			return
+
 		text.value = ''
+		submit.classList.remove('min')
 		text.classList.remove('exceeded')
 		count.classList.remove('exceeded')
 
 		updateCount()
 	}
 
-	function loadData() {
-		text.value = localStorage.getItem(storagePrefix)
+	const submitHandler = event => {
+		// Only run for the #draft form
+		if (!event.target.closest('form').matches('#draft')) return
 
-		// Keep character count on refresh
+		event.preventDefault()
+
+		if (!checkMinWords(countWords())) {
+			if (
+				!window.confirm(
+					'Mmm... not enough words. Are you sure you wanna send your text anyway?'
+				)
+			) {
+				console.log('ok, not sent!')
+				return
+			}
+		}
+
+		console.log('ok, sent!')
+
+		submit.classList.remove('min')
+		count.classList.remove('exceeded')
+		localStorage.removeItem(storagePrefix)
+		text.value = ''
 		updateCount()
 	}
+
+	const loadData = () => {
+		text.value = localStorage.getItem(storagePrefix)
+
+		updateCount()
+	}
+
+	//
+	// Inits & Event Listeners
+	//
 
 	// Load saved data from storage
 	loadData()
 
-	text.addEventListener('input', updateCount, false)
-	deleteBtn.addEventListener('click', deleteText, false)
+	// Listen for input events
+	document.addEventListener('input', updateCount, false)
+
+	// Listen for click events
+	document.addEventListener('click', cleanInput, false)
+
+	// Listen for submit events
+	document.addEventListener('submit', submitHandler, false)
 })()
