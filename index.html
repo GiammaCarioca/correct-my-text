@@ -22,12 +22,19 @@
 				</li>
 			</ul>
 
+			<label for="title"></label>
+			<div id="title" contenteditable="true" max="100">
+				Write The Title Here
+			</div>
+
 			<label for="text">Enter your text below.</label>
-			<textarea id="text"></textarea>
+			<textarea id="text" placeholder="Once upon a time..."></textarea>
 
 			<p id="count" aria-live="polite">
 				You've written 0 words.
 			</p>
+
+			<p id="wordsLeft" aria-live="polite"></p>
 
 			<button type="submit" id="submit">Submit My Text</button>
 			<button type="button" id="delete">Delete Draft</button>

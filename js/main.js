@@ -12,6 +12,9 @@
 	const maxWords = 10
 	const minWords = 5
 
+	const title = document.querySelector('#title')
+	const wordsLeft = document.querySelector('#wordsLeft')
+
 	//
 	// Methods
 	//
@@ -43,12 +46,26 @@
 
 	const isSingular = words => (words === 1 ? 'word' : 'words')
 
-	const autosaveDraft = () => localStorage.setItem(storagePrefix, text.value)
+	const autosaveDraft = () => {
+		const storedData = {
+			title: title.textContent,
+			text: text.value
+		}
+
+		if (!title || !text) return
+
+		const storedDataString = JSON.stringify(storedData)
+		localStorage.setItem(storagePrefix, storedDataString)
+	}
 
 	const updateCount = () => {
 		autosaveDraft()
 
 		const words = countWords()
+
+		maxWords > words
+			? (wordsLeft.textContent = `Words left: ${maxWords - words}`)
+			: (wordsLeft.textContent = `Congrats! You reached you goal!`)
 
 		if (checkMinWords(words)) {
 			submit.classList.add('min')
@@ -108,17 +125,29 @@
 			}
 		}
 
+		if (
+			title.textContent.length === 0 ||
+			title.textContent === 'Write The Title Here'
+		) {
+			return
+		}
+
 		console.log('ok, sent!')
 
 		submit.classList.remove('min')
 		count.classList.remove('exceeded')
 		localStorage.removeItem(storagePrefix)
+		title.textContent = 'Write The Title Here'
 		text.value = ''
 		updateCount()
 	}
 
 	const loadData = () => {
-		text.value = localStorage.getItem(storagePrefix)
+		let savedData = localStorage.getItem(storagePrefix)
+		savedData = savedData ? JSON.parse(savedData) : {}
+
+		title.innerHTML = savedData.title || 'Write The Title Here'
+		text.value = savedData.text || ''
 
 		updateCount()
 	}
@@ -138,4 +167,16 @@
 
 	// Listen for submit events
 	document.addEventListener('submit', submitHandler, false)
+
+	title.addEventListener('keydown', event => {
+		if (
+			event.which != 8 &&
+			title.innerHTML.length >= title.getAttribute('max')
+		) {
+			event.preventDefault()
+			return false
+		}
+
+		autosaveDraft()
+	})
 })()
